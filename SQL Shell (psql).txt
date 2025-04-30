@@ -1,0 +1,140 @@
+Server [localhost]:
+Database [postgres]: clientes
+Port [5432]:
+Username [postgres]: postgres
+Senha para o usuário postgres:
+
+psql (17.4)
+ADVERTÊNCIA: A página de código da console (850) difere da página de código do Windows (1252)
+             os caracteres de 8 bits podem não funcionar corretamente. Veja a página de
+             referência do psql "Notes for Windows users" para obter detalhes.
+Digite "help" para obter ajuda.
+
+clientes=# SELECT * from clientes;
+      nome       |          email          | n·mero |    telefone
+-----------------+-------------------------+--------+----------------
+ João Silva      | joao@gmail.com          |        | 26342637
+ Maria de Fatima | mariadefatima@gmail.com |        | (11) 999992787
+ Ana Leticia     | analeticia123@gmail.com |        | (11) 999992787
+ Jane            | janeluz323@gmail.com    |        | (23) 999992787
+(4 linhas)
+
+
+clientes=# CREATE OR REPLACE FUNCTION editar_cliente(
+clientes(#  p_nome TEXT,
+clientes(#  p_telefone TEXT,
+clientes(#    p_email TEXT
+clientes(# )
+clientes-# RETURNS VOID AS $$
+clientes$# BEGIN
+clientes$#  UPDATE clientes
+clientes$# SET telefone = p_telefone,
+clientes$#  email = p_email
+clientes$#   WHERE nome = p_nome;
+clientes$# END;
+clientes$# $$ LANGUAGE plpgsql;
+CREATE FUNCTION
+clientes=# CREATE OR REPLACE FUNCTION remover_cliente(
+clientes(#  p_nome TEXT
+clientes(# )
+clientes-# RETURNS VOID AS $$
+clientes$# BEGIN
+clientes$#  DELETE FROM clientes
+clientes$#  WHERE nome = p_nome;
+clientes$# END;
+clientes$# $$ LANGUAGE plpgsql;
+CREATE FUNCTION
+clientes=# SELECT remover_cliente('João Silva');
+ remover_cliente
+-----------------
+
+(1 linha)
+
+
+clientes=# SELECT * from clientes;
+      nome       |          email          | n·mero |    telefone
+-----------------+-------------------------+--------+----------------
+ Maria de Fatima | mariadefatima@gmail.com |        | (11) 999992787
+ Ana Leticia     | analeticia123@gmail.com |        | (11) 999992787
+ Jane            | janeluz323@gmail.com    |        | (23) 999992787
+(3 linhas)
+
+
+clientes=# CREATE OR REPLACE FUNCTION inserir_cliente(
+clientes(#  p_nome TEXT,
+clientes(#  p_telefone TEXT,
+clientes(#   p_email TEXT
+clientes(# )
+clientes-# RETURNS VOID AS $$
+clientes$# BEGIN
+clientes$#    INSERT INTO clientes (nome, telefone, email)
+clientes$# VALUES (p_nome, p_telefone, p_email);
+clientes$# END;
+clientes$# $$ LANGUAGE plpgsql;
+CREATE FUNCTION
+clientes=# SELECT inserir_cliente('João Silva', '(11) 91234-5678', 'joao@gmail.com');
+ inserir_cliente
+-----------------
+
+(1 linha)
+
+
+clientes=# SELECT * from clientes;
+      nome       |          email          | n·mero |    telefone
+-----------------+-------------------------+--------+-----------------
+ Maria de Fatima | mariadefatima@gmail.com |        | (11) 999992787
+ Ana Leticia     | analeticia123@gmail.com |        | (11) 999992787
+ Jane            | janeluz323@gmail.com    |        | (23) 999992787
+ João Silva      | joao@gmail.com          |        | (11) 91234-5678
+(4 linhas)
+
+
+clientes=# CREATE OR REPLACE FUNCTION listar_clientes()
+clientes-# RETURNS TABLE(nome TEXT, telefone TEXT, email TEXT) AS $$
+clientes$# BEGIN
+clientes$#  RETURN QUERY SELECT nome, telefone, email FROM clientes;
+clientes$# END;
+clientes$# $$ LANGUAGE plpgsql;
+CREATE FUNCTION
+clientes=# SELECT * FROM listar_clientes();
+ERRO:  referência à coluna "nome" é ambígua
+LINHA 1: SELECT nome, telefone, email FROM clientes
+                ^
+DETALHE:  Ela poderia referenciar uma variável PL/pgSQL ou uma coluna de tabela.
+CONSULTA:  SELECT nome, telefone, email FROM clientes
+CONTEXTO:  função PL/pgSQL listar_clientes() linha 3 em RETURN QUERY
+clientes=# CREATE OR REPLACE FUNCTION listar_clientes()
+clientes-# RETURNS TABLE(nome TEXT, telefone TEXT, email TEXT) AS $$
+clientes$# BEGIN
+clientes$#     RETURN QUERY
+clientes$#     SELECT c.nome, c.telefone, c.email
+clientes$#     FROM clientes c;
+clientes$#     END;
+clientes$# $$ LANGUAGE plpgsql;
+CREATE FUNCTION
+clientes=# SELECT * FROM listar_clientes();
+ERRO:  structure of query does not match function result type
+DETALHE:  Tipo character varying(100) retornado não corresponde ao tipo text esperado na coluna 1.
+CONTEXTO:  comando SQL "SELECT c.nome, c.telefone, c.email
+    FROM clientes c"
+função PL/pgSQL listar_clientes() linha 3 em RETURN QUERY
+clientes=# CREATE OR REPLACE FUNCTION listar_clientes()
+clientes-# RETURNS TABLE(nome TEXT, telefone TEXT, email TEXT) AS $$
+clientes$# BEGIN
+clientes$#  RETURN QUERY
+clientes$# SELECT c.nome::TEXT, c.telefone::TEXT, c.email::TEXT
+clientes$# FROM clientes c;
+clientes$# END;
+clientes$# $$ LANGUAGE plpgsql;
+CREATE FUNCTION
+clientes=# SELECT * FROM listar_clientes();
+      nome       |    telefone     |          email
+-----------------+-----------------+-------------------------
+ Maria de Fatima | (11) 999992787  | mariadefatima@gmail.com
+ Ana Leticia     | (11) 999992787  | analeticia123@gmail.com
+ Jane            | (23) 999992787  | janeluz323@gmail.com
+ João Silva      | (11) 91234-5678 | joao@gmail.com
+(4 linhas)
+
+
+clientes=#
